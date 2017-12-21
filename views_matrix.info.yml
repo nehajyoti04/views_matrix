@@ -1,0 +1,10 @@
+name: 'Views Matrix'
+description: 'Provides a views plugin that sorts a table by an X and Y criteria.'
+core: 8.x
+package: Views
+dependencies:
+  - views
+version: 7.x-1.0
+project: views_matrix
+datestamp: '1504871047'
+type: module
