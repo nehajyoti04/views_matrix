@@ -10,88 +10,78 @@ use Drupal\Core\Template\Attribute;
  * Preprocess function for views-view-matrix.html.twig
  */
 function views_matrix_preprocess_views_view_matrix(&$variables) {
+  $variables['header'] = [];
 
-//  kint($variables);
-//  kint($variables['rows'][0]['#row']);
-//  kint($variables['rows'][0]['#options']);
 
-//  kint($variables);
-
-//  kint($variables['view']->style_plugin->options);
+//  kint($variables['view']->storage->id());
   $view = $variables['view'];
-//  kint($variables['rows'][0]);
-// Get view options
-//  $view = $variables['view'];
-  $rows = $variables['rows'];
+  $items = $variables['rows'];
+  $variables['rows'] = '';
   $style = $view->style_plugin;
   $options = $style->options;
   $fields = $view->field;
-//  kint($fields);
-//  kint($fields['field_state']);
-
   $xfield_id = $options['xconfig']['field'];
   $yfield_id = $options['yconfig']['field'];
   $xfield = &$fields[$xfield_id];
   $yfield = &$fields[$yfield_id];
-//  kint($yfield);
+  $columns = [];
+  $columns_renders = [];
 
-
-//  kint($options['xconfig']['field']);
-
-//  $variables['rows'] = array('#markup' => $variables['rows']);
-
-
-
-//  $variables['header'] = [];
-//  $variables['row_classes'] =[];
-
-//  $vars['matrix_attributes'] = array(
-//    'class' => array('views-matrix'),
-//  );
-//  $variables['matrix_attributes']->addClass("views-matrix");
-
-
-//  $style = $view->style_plugin;
-//  $options = $style->options;
-
-  // Build the view container
-//  $container = '.view-' . Html::cleanCssIdentifier($view->storage->id()) . '.view-display-id-' . $view->current_display . ' > .view-content';
-
-  // If grouping enabled, style it.
-//  if (!empty($options['grouping'])) {
-//    $variables['grouping'] = true;
-//    static $groupid;
-//    $container .= ' .masonry-group-' . ++$groupid;
-//    $variables['grouping_class'] = "masonry-group masonry-group-$groupid";
-//  }
+  $first_column_header = $options['xconfig']['first_column'];
 
   // Add rows default and custom CSS classes.
   $variables['default_row_class'] = !empty($options['default_row_class']);
-  foreach ($rows as $id => $row) {
+  foreach ($items as $id => $item) {
+    $xvalue = $variables['view']->style_plugin->getField($id, $xfield_id);
+    $yvalue = $variables['view']->style_plugin->getField($id, $yfield_id);
 
-//    $xvalue = is_object($row) ? $xfield->get_value($row) : '';
-//    $yvalue = is_object($row) ? $yfield->get_value($row) : '';
-//
-//    kint($xvalue);
+    if (!in_array($xvalue, $columns)) {
+      $columns[$id] = $xvalue;
+      $columns_renders[$id] = $xvalue;
+    }
+
+    if ($first_column_header) {
+      $variables['header'][] = array(
+        '#markup' => $first_column_header,
+        'attributes' => array(
+          'class' => array(
+            'views-matrix-col-header',
+            'views-matrix-col-first',
+          ),
+        ),
+      );
+    }
+
 
 //    $variables['rows'][$id] = [];
-//    $variables['rows'][$id]['content'] = $row;
+//    $variables['rows'][$id]['content'] = $item;
 
 //    kint($id);
-//    kint($row);
-//    kint($row['data']);
-//    print '<pre>'; print_r("row"); print '</pre>';
-//    print '<pre>'; print_r($row); print '</pre>';
-//    print $row;
-//    dpm($row);
-//    $variables['rows'][$id]['content'] = "helllo1";
-//    $variables['rows'][$id]['attributes'] = new Attribute();
-//    $variables['rows'][$id]['attributes']->addClass("masonry-item");
-    $variables['rows'][$id]['content'] = $row;
+    $field_name = 'field_state';
+    // kint($variables['view']->style_plugin->getField($id, $field_name));
 
-//    if ($row_class = $view->style_plugin->getRowClass($id)) {
-//      $variables['rows'][$id]['attributes']->addClass($row_class);
-//    }
+
+
+
+
+//    $variables['rows'][$id]['content'] = $item;
+
+    $variables['rows'][$id][] = $item;
+//    $variables['rows'][$id][] = ['#markup' => $item];
+//    $variables['rows'][$id][] = ['#markup' => 'hello'];
+
+  }
+
+  foreach ($columns_renders as $xindex => $col_render) {
+    $variables['header'][] = array(
+      '#markup' => $col_render,
+      'attributes' => array(
+        'class' => array(
+          'views-matrix-col-header',
+          'views-matrix-col-first',
+        ),
+      ),
+    );
   }
 
   // Display content in a Masonry layout

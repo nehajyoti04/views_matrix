@@ -19,6 +19,7 @@
  */
 #}
 
+
 <table{{ attributes.addClass(classes) }}>
     {% if caption_needed %}
         <caption>
@@ -27,83 +28,33 @@
             {% else %}
                 {{ title }}
             {% endif %}
-            {% if (summary is not empty) or (description is not empty) %}
-                <details>
-                    {% if summary is not empty %}
-                        <summary>{{ summary }}</summary>
-                    {% endif %}
-                    {% if description is not empty %}
-                        {{ description }}
-                    {% endif %}
-                </details>
-            {% endif %}
         </caption>
     {% endif %}
 
     <thead>
     <tr>
-        <th>Hello Header1</th>
-        </tr>
-    </thead>
-
-    {% if header %}
-        <thead>
-        <tr>
-            <th>Hello Header</th>
-            {% for key, column in header %}
-                {% if column.default_classes %}
-                    {%
-                    set column_classes = [
-                    'views-field',
-                    'views-field-' ~ fields[key],
-                    ]
-                    %}
-                {% endif %}
-
-            {% endfor %}
-        </tr>
-        </thead>
-    {% endif %}
-    <tbody>
-    <tr>
-        {% for row in rows %}
-            <td> {{ row.content }} </td>
+        {% for key, column in header %}
+            <th> {{ column }}</th>
         {% endfor %}
     </tr>
+    </thead>
+
+    <tbody>
+    {#<tr>#}
+        {#{% for row in rows %}#}
+            {#<td> {{ row.content }} </td>#}
+        {#{% endfor %}#}
+    {#</tr>#}
+    <tr>
+    {% for row_index, row in rows %}
 
 
-    {% for row in rows %}
+        {% for col_index, content in row %}
+            {#{{ kint(content) }}#}
+            <td> {{ content }} </td>
+        {% endfor %}
 
-        {#<tr><td> {{ row.content }} </td></tr>#}
-            {#<tr><td> this is tr + td </td></tr>#}
-        {#<tr{{ row.attributes }}>#}
-            {% for key, column in row.columns %}
-                <td> ONLY TD </td>
-                {% if column.default_classes %}
-                    {%
-                    set column_classes = [
-                    'views-field'
-                    ]
-                    %}
-                    {% for field in column.fields %}
-                        {% set column_classes = column_classes|merge(['views-field-' ~ field]) %}
-                    {% endfor %}
-                {% endif %}
-            <td>
-                {%- if column.wrapper_element -%}
-                    <{{ column.wrapper_element }}>
-                    {% for content in column.content %}
-                        {{ content.separator }}{{ content.field_output }}
-                    {% endfor %}
-                    </{{ column.wrapper_element }}>
-                {%- else -%}
-                    {% for content in column.content %}
-                        {{- content.separator }}{{ content.field_output -}}
-                    {% endfor %}
-                {%- endif %}
-                </td>
-            {% endfor %}
-        </tr>
     {% endfor %}
+    </tr>
     </tbody>
 </table>
