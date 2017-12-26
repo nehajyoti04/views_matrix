@@ -40,6 +40,7 @@
     </thead>
 
     <tbody>
+
     {#<tr>#}
         {#{% for row in rows %}#}
             {#<td> {{ row.content }} </td>#}
@@ -47,12 +48,16 @@
     {#</tr>#}
     <tr>
     {% for row_index, row in rows %}
-
-
+        <tr>
         {% for col_index, content in row %}
-            {#{{ kint(content) }}#}
-            <td> {{ content }} </td>
+            {% if content.header %}
+                <th>{{ content }}</th>
+            {% else %}
+                <td>{{ content }}</td>
+            {% endif %}
+
         {% endfor %}
+        </tr>
 
     {% endfor %}
     </tr>
