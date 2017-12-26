@@ -40,12 +40,6 @@
     </thead>
 
     <tbody>
-
-    {#<tr>#}
-        {#{% for row in rows %}#}
-            {#<td> {{ row.content }} </td>#}
-        {#{% endfor %}#}
-    {#</tr>#}
     <tr>
     {% for row_index, row in rows %}
         <tr>
@@ -55,10 +49,8 @@
             {% else %}
                 <td>{{ content }}</td>
             {% endif %}
-
         {% endfor %}
         </tr>
-
     {% endfor %}
     </tr>
     </tbody>
