@@ -12,6 +12,7 @@ use Drupal\Core\Template\Attribute;
 function views_matrix_preprocess_views_view_matrix(&$variables) {
   $variables['header'] = [];
 
+//  kint($variables['field']->getValue($variables['row']));
 
 //  kint($variables['view']->storage->id());
   $view = $variables['view'];
@@ -32,10 +33,42 @@ function views_matrix_preprocess_views_view_matrix(&$variables) {
   $coordinates = [];
   $value_index_lookup = [];
   $first_column_header = $options['xconfig']['first_column'];
+  $left_fields = [];
+  $right_fields = [];
+//  kint("fields");
+//  kint($fields);
 
   // Add rows default and custom CSS classes.
   $variables['default_row_class'] = !empty($options['default_row_class']);
 
+  $variables['header'][] = array(
+    '#markup' => ' ',
+  );
+
+  // Place headers for fields right of the matrix.
+  foreach ($fields as $field_name => $field_handler) {
+    if (isset($options['field_positions'][$field_name])
+      && $options['field_positions'][$field_name] === 'right'
+      && empty($field_handler->options['exclude'])
+    ) {
+      $right_fields['_' . $field_name] = $field_name;
+    }
+  }
+
+  // Place headers for fields left of the matrix.
+  foreach ($fields as $field_name => $field_handler) {
+    if (isset($options['field_positions'][$field_name])
+      && $options['field_positions'][$field_name] === 'left'
+      && empty($field_handler->options['exclude'])
+    ) {
+      $variables['header'][] = array(
+        '#markup' => ' ',
+      );
+      $left_fields['_' . $field_name] = $field_name;
+    }
+  }
+
+  $not_in_matrix = array_flip($left_fields + $right_fields);
   foreach ($items as $id => $item) {
     $xvalue = $variables['view']->style_plugin->getField($id, $xfield_id);
     $yvalue = $variables['view']->style_plugin->getField($id, $yfield_id);
@@ -45,6 +78,7 @@ function views_matrix_preprocess_views_view_matrix(&$variables) {
       $value_index_lookup['x'][serialize($xvalue)] = $id;
       $columns_renders[$id] = $xvalue;
     }
+
     // Whether we've placed this item in the header or not, we can get its
     // coordinate.
     $coordinates[$id]['x'] = $value_index_lookup['x'][serialize($xvalue)];
@@ -64,17 +98,28 @@ function views_matrix_preprocess_views_view_matrix(&$variables) {
         '#markup' => $first_column_header,
       );
     }
-
   }
 
-  $column_indices = $columns_renders;
-  $variables['header'][] = ' ';
+  $column_indices = array_keys($columns_renders);
+  //  $variables['header'][] = ' ';
   foreach (array_keys($rows_renders) as $yindex) {
     $variables['rows'][$yindex]['header'] = $row_header[$yindex];
+    if(!empty($left_fields)) {
+      $variables['rows'][$yindex]['left_index'] = array(
+        '#markup' => ' ',
+      );
+    }
+
 //    array_unshift($variables['rows'][$yindex], ['header' => $row_header[$yindex]]);
 
-    foreach (array_keys($column_indices) as $xindex) {
+    foreach ($column_indices as $xindex) {
       $variables['rows'][$yindex][$xindex] = array(
+        '#markup' => ' ',
+      );
+    }
+
+    if (!empty($right_fields)) {
+      $variables['rows'][$yindex]['right_index'] = array(
         '#markup' => ' ',
       );
     }
@@ -86,8 +131,55 @@ function views_matrix_preprocess_views_view_matrix(&$variables) {
     );
   }
 
+  // Place headers for fields right of the matrix.
+  foreach ($fields as $field_name => $field_handler) {
+    if (isset($options['field_positions'][$field_name])
+      && $options['field_positions'][$field_name] === 'right'
+      && empty($field_handler->options['exclude'])
+    ) {
+      $variables['header'][] = array(
+        '#markup' => ' ',
+      );
+    }
+  }
+
   foreach ($items as $id => $item) {
-    $variables['rows'][$coordinates[$id]['y']][$coordinates[$id]['x']][] = $item;
+
+    $rendered_item = '';
+
+    // @TODO  Obey the "Hide if empty" setting.
+    // @TODO Field CSS id.
+    // @TODO Field wrapper
+    // @TODO Field Label.
+    // Label Colon.
+
+    foreach ($fields as $field_name => $field_handler) {
+
+//      kint($field_handler->options['settings']);
+      if ($field_handler->options['exclude']) {
+        // Don't render the field.
+        continue;
+      }
+
+      // Obey the "Hide if empty" setting.
+//      if ($field_handler->options['hide_empty'] && (string) $renders[$index][$field_name] === '') {
+      if ($field_handler->options['hide_empty']) {
+        continue;
+      }
+
+      if (empty($not_in_matrix[$field_name])) {
+        $rendered_item .= '<div><span>' . $variables['view']->style_plugin->getField($id, $field_name) . '</span></div>';
+      }
+      else {
+        if (in_array($field_name, $left_fields)) {
+          $variables['rows'][$coordinates[$id]['y']]['left_index']['#markup'] .= '<div><span>' . $variables['view']->style_plugin->getField($id, $field_name) . '</span></div>';
+        }
+        elseif (in_array($field_name, $right_fields)) {
+          $variables['rows'][$coordinates[$id]['y']]['right_index']['#markup'] .= '<div><span>' . $variables['view']->style_plugin->getField($id, $field_name) . '</span></div>';
+        }
+      }
+    }
+    $variables['rows'][$coordinates[$id]['y']][$coordinates[$id]['x']]['#markup'] = $rendered_item;
   }
 
 }
