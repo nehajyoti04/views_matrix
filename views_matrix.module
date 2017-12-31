@@ -145,6 +145,12 @@ function views_matrix_preprocess_views_view_matrix(&$variables) {
 
   foreach ($items as $id => $item) {
 
+    // If the "Limit to one result per table cell" option is active and there is
+    // already data in this table cell, skip this result row.
+    if ($options['one_result_per_cell'] && $variables['rows'][$coordinates[$id]['y']][$coordinates[$id]['x']]['#markup'] != " ") {
+      continue;
+    }
+
     $rendered_item = '';
 
     // @TODO  Obey the "Hide if empty" setting.
@@ -179,7 +185,24 @@ function views_matrix_preprocess_views_view_matrix(&$variables) {
         }
       }
     }
-    $variables['rows'][$coordinates[$id]['y']][$coordinates[$id]['x']]['#markup'] = $rendered_item;
+    $variables['rows'][$coordinates[$id]['y']][$coordinates[$id]['x']]['#markup'] .= $rendered_item;
+
+  }
+
+  // Apply the "Add row numbers" option, if enabled. This has to happen last,
+  // because otherwise removing empty rows might mess up the numbering.
+  if ($options['yconfig']['row_numbers']) {
+    $row_number = 0;
+    $row_header_format = $options['yconfig']['row_number_format'];
+    foreach (array_keys($rows_renders) as $yindex) {
+      $header = $variables['rows'][$yindex]['header']['#markup'];
+      if ($header) {
+        ++$row_number;
+        $variables['rows'][$yindex]['header']['#markup'] = $row_number . ') '. $header;
+      }
+      unset($header);
+
+    }
   }
 
 }
