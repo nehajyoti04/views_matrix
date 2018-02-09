@@ -1,67 +1,45 @@
+# Travis CI Configuration File
+
+# Tell Travis CI we're using PHP
 language: php
 
-php:
-  - 5.3
-  - 5.4
-  - 5.5
-  - 5.6
-  - hhvm
-
+# Build matrix options
 matrix:
-  fast_finish: true
+  include:
+    - php: 5.5
+      env: WP_TRAVISCI=travis:js
+    - php: 5.2
+      env: WP_TRAVISCI=travis:phpunit
+    - php: 5.3
+      env: WP_TRAVISCI=travis:phpunit
+    - php: 5.4
+      env: WP_TRAVISCI=travis:phpunit
+    - php: 5.5
+      env: WP_TRAVISCI=travis:phpunit
+    - php: 5.6
+      env: WP_TRAVISCI=travis:phpunit
+    - php: hhvm
+      env: WP_TRAVISCI=travis:phpunit
   allow_failures:
-    - php:
-      - 5.3
-      - 5.4
-      - 5.5
-      - 5.6
-      - hhvm
+    - php: 5.6
+    - php: hhvm
+  fast_finish: true
 
-mysql:
-  database: travis_ci_drupal_module_example_test
-  username: root
-  encoding: utf8
+env:
+  - WP_VERSION=master WP_MULTISITE=1
 
+# Before install, failures in this section will result in build status 'errored'
 before_install:
-  - sudo apt-get update > /dev/null
+  - WP_CORE_DIR=/tmp/wordpress/
+  - >
+    if [[ "$WP_TRAVISCI" == "travis:phpunit" ]]; then
+        mysql -e "CREATE DATABASE wordpress_tests;" -uroot
+        cp wp-tests-config-sample.php wp-tests-config.php
+        sed -i "s/pdb/wordpress_tests/" wp-tests-config.php
+        sed -i "s/pdbuser/travis/" wp-tests-config.php
+        sed -i "s/04-3J31cd08k5B//" wp-tests-config.php
+        svn checkout https://plugins.svn.wordpress.org/wordpress-importer/trunk tests/phpunit/data/plugins/wordpress-importer
+    fi
 
-install:
-  # install php packages required for running a web server from drush on php 5.3
-  - sudo apt-get install -y --force-yes php5-cgi php5-mysql
-
-  # add composer's global bin directory to the path
-  # see: https://github.com/drush-ops/drush#install---composer
-  - export PATH="$HOME/.composer/vendor/bin:$PATH"
-
-  # install drush globally
-  - composer global require drush/drush:dev-master
-
-before_script:
-  # remove Xdebug as we don't need it and it causes
-  # PHP Fatal error:  Maximum function nesting level of '256' reached
-  - phpenv config-rm xdebug.ini
-
-  # navigate out of module directory to prevent blown stack by recursive module lookup
-  - cd ../..
-
-  # download Drupal 8 core.
-  - wget -q -O - http://ftp.drupal.org/files/projects/drupal-8.0.x-dev.tar.gz | tar xz
-  - cd drupal-8.0.x-dev
-
-  # apply patch so that run-tests.sh returns error code when executing Simpletests.
-  - wget -q -O - https://www.drupal.org/files/issues/run_tests_sh_should-2189345-53.patch | patch -p1
-
-  # create new site, stubbing sendmail path with true to prevent delivery errors and manually resolving drush path
-  - mysql -e 'create database travis_ci_drupal_module_example_test'
-  - php -d sendmail_path=`which true` ~/.composer/vendor/bin/drush.php --yes core-quick-drupal --profile=testing --no-server --db-url=mysql://root:@127.0.0.1/travis_ci_drupal_module_example_test --enable=simpletest travis_ci_drupal_module_example_test
-
-  # reference and enable travis_ci_drupal_module_example in build site
-  - ln -s $(readlink -e $(cd -)) travis_ci_drupal_module_example_test/drupal/sites/all/modules/travis_ci_drupal_module_example
-  - cd travis_ci_drupal_module_example_test/drupal
-  - drush --yes pm-enable travis_ci_drupal_module_example
-
-  # start a web server on port 8080, run in the background; wait for initialization
-  - drush runserver 127.0.0.1:8080 &
-  - until netstat -an 2>/dev/null | grep '8080.*LISTEN'; do true; done
-
-script: drush test-run 'Travis-CI Drupal Module Example' --uri=http://127.0.0.1:8080
+# Script, failures in this section will result in build status 'failed'
+script: ./civic.sh
