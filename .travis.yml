@@ -1,0 +1,55 @@
+language: php
+sudo: false
+dist: trusty
+
+matrix:
+  include:
+    - php: 7.1
+  fast_finish: true
+
+env:
+  global:
+    - COMPOSER_BIN=$TRAVIS_BUILD_DIR/vendor/bin
+    - BUILD_DIR=$TRAVIS_BUILD_DIR
+
+cache:
+  bundler: true
+  apt: true
+  directories:
+  - "$HOME/.composer/cache"
+  - "$HOME/.console"
+  - "$HOME/.drush/cache"
+  - "$HOME/.nvm"
+  - "vendor"
+
+addons:
+  ssh_known_hosts:
+    - svn-23449.prod.hosting.acquia.com
+    - svn-23659.prod.hosting.acquia.com
+    - svn-15816.prod.hosting.acquia.com
+
+before_install:
+  # Disable xdebug.
+  - phpenv config-rm xdebug.ini
+  - composer self-update
+  - composer validate --no-check-all --ansi
+  - composer install
+  - npm install gulp-cli -g
+
+
+install:
+  - source ${BUILD_DIR}/travis_scripts/setup_environment
+  - source ${BUILD_DIR}/travis_scripts/setup_project
+  - source ${BUILD_DIR}/travis_scripts/front_end_setup
+
+script:
+  - source ${BUILD_DIR}/travis_scripts/run_tests
+  - ${COMPOSER_BIN}/phpcs --standard=Drupal --extensions=php,module,inc,install,test,profile,theme,css,info,txt,md  ${BUILD_DIR}/docroot/sites/all/modules/custom/  --report=summary -s
+
+after_success:
+  # Watch for successful build job on `develop` branch; deploy to `develop`.
+  - cd ${BUILD_DIR}
+  - source ${BUILD_DIR}/travis_scripts/deploy develop develop-build
+
+notifications:
+  email: false

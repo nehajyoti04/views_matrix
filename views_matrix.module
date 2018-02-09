@@ -11,10 +11,6 @@ use Drupal\Core\Template\Attribute;
  */
 function views_matrix_preprocess_views_view_matrix(&$variables) {
   $variables['header'] = [];
-
-//  kint($variables['field']->getValue($variables['row']));
-
-//  kint($variables['view']->storage->id());
   $view = $variables['view'];
   $items = $variables['rows'];
   $variables['rows'] = '';
@@ -23,8 +19,6 @@ function views_matrix_preprocess_views_view_matrix(&$variables) {
   $fields = $view->field;
   $xfield_id = $options['xconfig']['field'];
   $yfield_id = $options['yconfig']['field'];
-  $xfield = &$fields[$xfield_id];
-  $yfield = &$fields[$yfield_id];
   $columns = [];
   $rows = [];
   $columns_renders = [];
@@ -35,8 +29,6 @@ function views_matrix_preprocess_views_view_matrix(&$variables) {
   $first_column_header = $options['xconfig']['first_column'];
   $left_fields = [];
   $right_fields = [];
-//  kint("fields");
-//  kint($fields);
 
   // Add rows default and custom CSS classes.
   $variables['default_row_class'] = !empty($options['default_row_class']);
@@ -101,7 +93,6 @@ function views_matrix_preprocess_views_view_matrix(&$variables) {
   }
 
   $column_indices = array_keys($columns_renders);
-  //  $variables['header'][] = ' ';
   foreach (array_keys($rows_renders) as $yindex) {
     $variables['rows'][$yindex]['header'] = $row_header[$yindex];
     if(!empty($left_fields)) {
@@ -109,8 +100,6 @@ function views_matrix_preprocess_views_view_matrix(&$variables) {
         '#markup' => ' ',
       );
     }
-
-//    array_unshift($variables['rows'][$yindex], ['header' => $row_header[$yindex]]);
 
     foreach ($column_indices as $xindex) {
       $variables['rows'][$yindex][$xindex] = array(
@@ -153,22 +142,13 @@ function views_matrix_preprocess_views_view_matrix(&$variables) {
 
     $rendered_item = '';
 
-    // @TODO  Obey the "Hide if empty" setting.
-    // @TODO Field CSS id.
-    // @TODO Field wrapper
-    // @TODO Field Label.
-    // Label Colon.
-
     foreach ($fields as $field_name => $field_handler) {
-
-//      kint($field_handler->options['settings']);
       if ($field_handler->options['exclude']) {
         // Don't render the field.
         continue;
       }
 
       // Obey the "Hide if empty" setting.
-//      if ($field_handler->options['hide_empty'] && (string) $renders[$index][$field_name] === '') {
       if ($field_handler->options['hide_empty']) {
         continue;
       }
@@ -186,14 +166,12 @@ function views_matrix_preprocess_views_view_matrix(&$variables) {
       }
     }
     $variables['rows'][$coordinates[$id]['y']][$coordinates[$id]['x']]['#markup'] .= $rendered_item;
-
   }
 
   // Apply the "Add row numbers" option, if enabled. This has to happen last,
   // because otherwise removing empty rows might mess up the numbering.
   if ($options['yconfig']['row_numbers']) {
     $row_number = 0;
-    $row_header_format = $options['yconfig']['row_number_format'];
     foreach (array_keys($rows_renders) as $yindex) {
       $header = $variables['rows'][$yindex]['header']['#markup'];
       if ($header) {
@@ -201,7 +179,6 @@ function views_matrix_preprocess_views_view_matrix(&$variables) {
         $variables['rows'][$yindex]['header']['#markup'] = $row_number . ') '. $header;
       }
       unset($header);
-
     }
   }
 

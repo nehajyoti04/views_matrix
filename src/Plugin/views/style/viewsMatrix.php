@@ -2,7 +2,6 @@
 
 namespace Drupal\views_matrix\Plugin\views\style;
 
-use Drupal\Component\Utility\Html;
 use Drupal\Core\Annotation\Translation;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\views\Annotation\ViewsStyle;
@@ -77,7 +76,6 @@ class viewsMatrix extends StylePluginBase {
       '#type' => 'select',
       '#title' => t('Sort by'),
       '#description' => t('Select the field to sort by. Picking a different field here will only be meaningful if the values correspond to the field used for the header such as sorting by a Taxonomy term or Entity reference relationship field.'),
-//      '#options' => $sort_field_options,
       '#options' => $field_options,
       '#default_value' => $this->options['xconfig']['sort_field'],
     );
@@ -127,22 +125,10 @@ class viewsMatrix extends StylePluginBase {
       '#default_value' => $this->options['yconfig']['row_numbers'],
     );
 
-//    $form['yconfig']['row_number_format'] = array(
-//      '#type' => 'textfield',
-//      '#title' => t('Row number format'),
-//      '#description' => t('Set the complete text to be displayed for the row header. Use "[counter]" as a token for the row number, and "[label]" as the output generated from the field.'),
-//      '#default_value' => $this->options['yconfig']['row_number_format'],
-//      '#required' => TRUE,
-//      '#dependency' => array(
-//        'edit-style-options-yconfig-row-numbers' => array(1),
-//      ),
-//    );
-
     $form['yconfig']['sort_field'] = array(
       '#type' => 'select',
       '#title' => t('Sort by'),
       '#description' => t('Select the field to sort by. Picking a different field here will only be meaningful if the values correspond to the field used for the header such as sorting by a Taxonomy term or Entity reference relationship field.'),
-//      '#options' => $sort_field_options,
       '#options' => $field_options,
       '#default_value' => $this->options['yconfig']['sort_field'],
     );
@@ -222,7 +208,6 @@ class viewsMatrix extends StylePluginBase {
         ),
       );
     }
-
   }
 
 }
