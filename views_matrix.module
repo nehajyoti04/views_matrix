@@ -1,13 +1,12 @@
 <?php
-/**
- * @file
- *   Views Matrix module file.
- */
-use Drupal\Component\Utility\Html;
-use Drupal\Core\Template\Attribute;
 
 /**
- * Preprocess function for views-view-matrix.html.twig
+ * @file
+ * Views Matrix module file.
+ */
+
+/**
+ * Preprocess function for views-view-matrix.html.twig.
  */
 function views_matrix_preprocess_views_view_matrix(&$variables) {
   $variables['header'] = [];
@@ -33,9 +32,9 @@ function views_matrix_preprocess_views_view_matrix(&$variables) {
   // Add rows default and custom CSS classes.
   $variables['default_row_class'] = !empty($options['default_row_class']);
 
-  $variables['header'][] = array(
+  $variables['header'][] = [
     '#markup' => ' ',
-  );
+  ];
 
   // Place headers for fields right of the matrix.
   foreach ($fields as $field_name => $field_handler) {
@@ -53,9 +52,7 @@ function views_matrix_preprocess_views_view_matrix(&$variables) {
       && $options['field_positions'][$field_name] === 'left'
       && empty($field_handler->options['exclude'])
     ) {
-      $variables['header'][] = array(
-        '#markup' => ' ',
-      );
+      $variables['header'][] = ['#markup' => ' '];
       $left_fields['_' . $field_name] = $field_name;
     }
   }
@@ -76,9 +73,7 @@ function views_matrix_preprocess_views_view_matrix(&$variables) {
     $coordinates[$id]['x'] = $value_index_lookup['x'][serialize($xvalue)];
 
     if (!in_array($yvalue, $rows)) {
-      $row_header[$id] = array(
-        '#markup' => $yvalue,
-      );
+      $row_header[$id] = ['#markup' => $yvalue];
       $rows[$id] = $yvalue;
       $value_index_lookup['y'][serialize($yvalue)] = $id;
       $rows_renders[$id] = $yvalue;
@@ -86,38 +81,28 @@ function views_matrix_preprocess_views_view_matrix(&$variables) {
     $coordinates[$id]['y'] = $value_index_lookup['y'][serialize($yvalue)];
 
     if ($first_column_header) {
-      $variables['header'][] = array(
-        '#markup' => $first_column_header,
-      );
+      $variables['header'][] = ['#markup' => $first_column_header];
     }
   }
 
   $column_indices = array_keys($columns_renders);
   foreach (array_keys($rows_renders) as $yindex) {
     $variables['rows'][$yindex]['header'] = $row_header[$yindex];
-    if(!empty($left_fields)) {
-      $variables['rows'][$yindex]['left_index'] = array(
-        '#markup' => ' ',
-      );
+    if (!empty($left_fields)) {
+      $variables['rows'][$yindex]['left_index'] = ['#markup' => ' '];
     }
 
     foreach ($column_indices as $xindex) {
-      $variables['rows'][$yindex][$xindex] = array(
-        '#markup' => ' ',
-      );
+      $variables['rows'][$yindex][$xindex] = ['#markup' => ' '];
     }
 
     if (!empty($right_fields)) {
-      $variables['rows'][$yindex]['right_index'] = array(
-        '#markup' => ' ',
-      );
+      $variables['rows'][$yindex]['right_index'] = ['#markup' => ' '];
     }
   }
 
   foreach ($columns_renders as $xindex => $col_render) {
-    $variables['header'][] = array(
-      '#markup' => $col_render,
-    );
+    $variables['header'][] = ['#markup' => $col_render];
   }
 
   // Place headers for fields right of the matrix.
@@ -126,9 +111,7 @@ function views_matrix_preprocess_views_view_matrix(&$variables) {
       && $options['field_positions'][$field_name] === 'right'
       && empty($field_handler->options['exclude'])
     ) {
-      $variables['header'][] = array(
-        '#markup' => ' ',
-      );
+      $variables['header'][] = ['#markup' => ' '];
     }
   }
 
@@ -176,7 +159,7 @@ function views_matrix_preprocess_views_view_matrix(&$variables) {
       $header = $variables['rows'][$yindex]['header']['#markup'];
       if ($header) {
         ++$row_number;
-        $variables['rows'][$yindex]['header']['#markup'] = $row_number . ') '. $header;
+        $variables['rows'][$yindex]['header']['#markup'] = $row_number . ') ' . $header;
       }
       unset($header);
     }
